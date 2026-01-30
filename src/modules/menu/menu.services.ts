@@ -1,5 +1,5 @@
-import { Meal } from "../../generated/prisma/browser";
-import { prisma } from "../lib/prisma";
+import { Meal } from "../../../generated/prisma/browser";
+import { prisma } from "../../lib/prisma";
 
 
 const createMeal = async (data: Omit<Meal, 'id' | 'createdAt' | 'updatedAt' | 'authorId'>) => {

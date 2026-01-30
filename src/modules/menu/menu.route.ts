@@ -1,6 +1,6 @@
 import express, { Router } from "express";
-
 import { MealController } from "./menu.controller";
+
 
 const router = express.Router();
 router.post(
