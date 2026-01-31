@@ -7,4 +7,9 @@ router.post(
 "/", 
 auth(UserRole.CUSTOMER), providerController.createProvider);
 
+router.get(
+    "/",
+    providerController.getAllProviders
+)
+
 export const providerRouter: Router = router;

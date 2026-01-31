@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { providerService } from "./provider.services";
+import paginationSortingHelper from "../../helper/paginationSortingHelper";
 
 const createProvider = async (req: Request, res: Response) => {
   try {
@@ -31,6 +32,36 @@ const createProvider = async (req: Request, res: Response) => {
   }
 };
 
+const getAllProviders = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.query;
+    const searchString =
+      typeof search === "string" ? search : undefined;
+
+    const { page, limit, skip, sortBy, sortOrder } =
+      paginationSortingHelper(req.query);
+
+    const result = await providerService.getAllProviders({
+      search: searchString,
+      page,
+      limit,
+      skip,
+      sortBy,
+      sortOrder,
+    });
+
+    res.status(200).json(result);
+  } catch (e) {
+    res.status(400).json({
+      error: "Failed to fetch providers",
+      details: e,
+    });
+  }
+};
+
+
+
 export const providerController = {
   createProvider,
+  getAllProviders
 };

@@ -13,9 +13,9 @@ app.use(cors({
 }))
 
 app.use(express.json());
-app.all('/api/auth/*splat', toNodeHandler(auth));
+app.use('/api/auth', toNodeHandler(auth));
 
-app.use("/posts", MealRouter);
+app.use("/meals", MealRouter);
 app.use("/provider", providerRouter);
 app.get("/", (req, res) => {
     res.send("Hello, World!");
