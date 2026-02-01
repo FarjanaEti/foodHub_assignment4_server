@@ -4,6 +4,7 @@ import { UserRole } from "../../middleware/auth";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
 
 
+
 const createMeal = async (req: Request, res: Response) => {
   try {
 
@@ -30,7 +31,6 @@ if (!providerId || req.user?.role !== UserRole.PROVIDER) {
     });
   }
 };
-
 
 //grt all meals
 const getAllMeals = async (req: Request, res: Response) => {
@@ -84,8 +84,23 @@ const getAllMeals = async (req: Request, res: Response) => {
     });
   }
 };
+//get meal by id
+const getMealById = async (req: Request, res: Response) => {
+    try {
+    
+        const { mealId } = req.params
+        const result = await mealService.getMealById(mealId as string)
+        res.status(200).json(result)
+    } catch (e :any) {
+         res.status(404).json({
+      success: false,
+      message: e.message || "Meal not found",
+    });
+    }
+}
 
 export const MealController = {
   createMeal,
-  getAllMeals
+  getAllMeals,
+  getMealById
 };

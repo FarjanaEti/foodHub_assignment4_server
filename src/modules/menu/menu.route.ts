@@ -10,4 +10,10 @@ router.post(
     MealController.createMeal
 )
 router.get("/", MealController.getAllMeals);
+
+router.get(
+    "/:mealId",
+    MealController.getMealById)
+
+
 export const MealRouter: Router = router;
