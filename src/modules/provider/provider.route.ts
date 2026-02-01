@@ -12,4 +12,6 @@ router.get(
     providerController.getAllProviders
 )
 
+router.get("/:providerId",providerController.getProviderById)
+
 export const providerRouter: Router = router;

@@ -5,6 +5,7 @@ import { auth } from "./lib/auth";
 import cors from 'cors';
 import { providerRouter } from "./modules/provider/provider.route";
 import { categoryRouter } from "./modules/category/category.route";
+import { orderRouter } from "./modules/order/order.route";
 
 const app: Application = express();
 
@@ -19,6 +20,8 @@ app.use('/api/auth', toNodeHandler(auth));
 app.use("/meals", MealRouter);
 app.use("/api", categoryRouter);
 app.use("/provider", providerRouter);
+app.use("/order", orderRouter);
+
 app.get("/", (req, res) => {
     res.send("Hello, World!");
 });

@@ -119,12 +119,36 @@ const getAllProviders = async ({
     },
   };
 };
+//get provider by id with menu
+const getProviderById=async(id:string)=>{
+   const provider=await prisma.providerProfile.findUnique({
+      where:{id},
+      include:{
+        meals:{
+        select:{
+        id: true,
+        title: true,
+        price: true,
+        image: true,
+        available: true,
+          }
+        }
+      }
+   })
+
+   if(!provider){
+    throw new Error("Provider not found")
+   }
+
+   return provider;
+}
 
 
 
 
 export const providerService = {
           createProviderProfile,
-          getAllProviders                    
+          getAllProviders,
+          getProviderById                    
 }
   

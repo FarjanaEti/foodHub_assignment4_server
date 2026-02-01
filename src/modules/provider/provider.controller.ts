@@ -59,9 +59,24 @@ const getAllProviders = async (req: Request, res: Response) => {
   }
 };
 
+//get provider by id with menu
+const getProviderById=async(req:Request, res:Response)=>{
+  try{
+     const {providerId}=req.params;
+     const result=await providerService.getProviderById(providerId as string)
+     res.status(200).json(result)
+  }catch(e:any){
+    res.status(404).json({
+      success: false,
+      message: e.message || "provider not found",
+    });
+  }
+}
+
 
 
 export const providerController = {
   createProvider,
-  getAllProviders
+  getAllProviders,
+  getProviderById
 };
