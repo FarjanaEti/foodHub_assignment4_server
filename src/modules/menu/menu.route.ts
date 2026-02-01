@@ -9,5 +9,5 @@ router.post(
     auth(UserRole.PROVIDER),
     MealController.createMeal
 )
-
+router.get("/", MealController.getAllMeals);
 export const MealRouter: Router = router;
