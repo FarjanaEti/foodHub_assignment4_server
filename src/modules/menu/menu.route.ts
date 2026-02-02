@@ -15,5 +15,9 @@ router.get(
     "/:mealId",
     MealController.getMealById)
 
-
+router.delete(
+    "/:mealId",
+    auth(UserRole.PROVIDER),
+    MealController.deleteMeal
+)
 export const MealRouter: Router = router;
