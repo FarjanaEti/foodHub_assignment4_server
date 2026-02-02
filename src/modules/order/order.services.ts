@@ -59,6 +59,42 @@ export const createOrder = async (payload:{
   
 };
 
+//get all order provider and admin
+export const getAllOrder=async()=>{
+   return prisma.order.findMany({
+    where: { status:"PLACED" },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+//get order by id
+const getOrderById = async (id: string) => {
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      customer:{
+        select:{
+          id:true,
+          email:true
+        }
+      },
+      provider:{
+        select:{
+          id:true,
+          restaurantName:true
+        }
+      }
+    },
+  });
+
+  if (!order) {
+    throw new Error("order not found");
+  }
+
+  return order;
+};
 export const orderServiceProvider={
-        createOrder                      
+        createOrder,
+        getAllOrder,
+        getOrderById                      
 }

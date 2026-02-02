@@ -99,7 +99,6 @@ const getAllMeals = async (query: any) => {
 };
 
 //get meal by id
-
 const getMealById = async (id: string) => {
   const meal = await prisma.meal.findUnique({
     where: { id },

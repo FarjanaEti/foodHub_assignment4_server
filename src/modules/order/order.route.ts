@@ -11,4 +11,11 @@ router.post(
   orderController.createOrder
 )
 
+router.get("/allOrders",auth(UserRole.PROVIDER,UserRole.ADMIN), 
+  orderController.getAllOrder
+)
+
+router.get("/:orderId",orderController.getOrderById)
+
+
 export const orderRouter: Router = router;
