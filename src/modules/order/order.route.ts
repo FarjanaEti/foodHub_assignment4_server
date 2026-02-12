@@ -1,21 +1,46 @@
 import express, { Router } from "express";
 import { orderController } from "./order.controller";
-
 import auth, { UserRole } from "../../middleware/auth";
 
-
 const router = express.Router();
+
+// Create order (Customer)
 router.post(
-    "/",
-    auth(UserRole.CUSTOMER),
+  "/",
+  auth(UserRole.CUSTOMER),
   orderController.createOrder
-)
+);
 
-router.get("/allOrders",auth(UserRole.PROVIDER,UserRole.ADMIN), 
-  orderController.getAllOrder
-)
+// Customer - My Orders
+router.get(
+  "/myOrders",
+  auth(UserRole.CUSTOMER),
+  orderController.getMyOrders
+);
 
-router.get("/:orderId",orderController.getOrderById)
+// Provider - Their Orders
+router.get(
+  "/providerOrders",
+  auth(UserRole.PROVIDER),
+  orderController.getProviderOrders
+);
 
+// Admin - All Orders
+router.get(
+  "/allOrders",
+  auth(UserRole.ADMIN),
+  orderController.getAllOrders
+);
+
+// Get Order by ID (All roles but validated inside)
+router.get(
+  "/:orderId",
+  auth(
+    UserRole.ADMIN,
+    UserRole.PROVIDER,
+    UserRole.CUSTOMER
+  ),
+  orderController.getOrderById
+);
 
 export const orderRouter: Router = router;

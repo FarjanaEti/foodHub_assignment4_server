@@ -1,35 +1,34 @@
-
 import { prisma } from "../../lib/prisma";
 
-export const createOrder = async (payload:{
-  customerId: string,
-   providerId: string;
+// ================= CREATE ORDER =================
+
+const createOrder = async (payload: {
+  customerId: string;
+  providerId: string;
   address: string;
-  items:{
-     mealId:string;
-     quantity:number;                         
-  }[];                         
-}
- 
-) => {
-  const mealIds = payload.items.map(item => item.mealId);
-  
-  const meals=await prisma.meal.findMany({
-      where: {
+  items: {
+    mealId: string;
+    quantity: number;
+  }[];
+}) => {
+  const mealIds = payload.items.map((item) => item.mealId);
+
+  const meals = await prisma.meal.findMany({
+    where: {
       id: { in: mealIds },
       available: true,
       providerId: payload.providerId,
-    },                       
-  })       
-  
-  if(meals.length !== payload.items.length){
-       throw new Error("unavailable meal");                        
-  }
-  
-  let totalAmount = 0;
-  const orderItems = payload.items.map(item => {
-    const meal = meals.find(m => m.id === item.mealId)!;
+    },
+  });
 
+  if (meals.length !== payload.items.length) {
+    throw new Error("Unavailable meal detected");
+  }
+
+  let totalAmount = 0;
+
+  const orderItems = payload.items.map((item) => {
+    const meal = meals.find((m) => m.id === item.mealId)!;
     const itemTotal = meal.price * item.quantity;
     totalAmount += itemTotal;
 
@@ -39,6 +38,7 @@ export const createOrder = async (payload:{
       price: meal.price,
     };
   });
+
   const order = await prisma.order.create({
     data: {
       customerId: payload.customerId,
@@ -55,46 +55,61 @@ export const createOrder = async (payload:{
   });
 
   return order;
-
-  
 };
 
-//get all order provider and admin
-export const getAllOrder=async()=>{
-   return prisma.order.findMany({
-    where: { status:"PLACED" },
-    orderBy: { createdAt: "asc" },
-  });
-}
+// ================= ADMIN =================
 
-//get order by id
+const getAllOrders = async () => {
+  return prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+// ================= CUSTOMER =================
+
+const getCustomerOrders = async (customerId: string) => {
+  return prisma.order.findMany({
+    where: { customerId },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+// ================= PROVIDER =================
+
+const getProviderOrders = async (providerId: string) => {
+  return prisma.order.findMany({
+    where: { providerId },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
+// ================= GET ORDER BY ID (WITH SECURITY) =================
+
 const getOrderById = async (id: string) => {
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
-      customer:{
-        select:{
-          id:true,
-          email:true
-        }
+      items: true,
+      customer: {
+        select: { id: true, email: true },
       },
-      provider:{
-        select:{
-          id:true,
-          restaurantName:true
-        }
-      }
+      provider: {
+        select: { id: true, restaurantName: true },
+      },
     },
   });
 
   if (!order) {
-    throw new Error("order not found");
+    throw new Error("Order not found");
   }
 
   return order;
 };
-export const orderServiceProvider={
-        createOrder,
-        getAllOrder,
-        getOrderById                      
-}
+
+export const orderService = {
+  createOrder,
+  getAllOrders,
+  getCustomerOrders,
+  getProviderOrders,
+  getOrderById,
+};

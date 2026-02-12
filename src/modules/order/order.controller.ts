@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
-import { orderServiceProvider } from "./order.services";
+import { orderService } from "./order.services";
+
+// ================= CREATE =================
 
 const createOrder = async (req: Request, res: Response) => {
   try {
-    const result = await orderServiceProvider.createOrder({
+    const result = await orderService.createOrder({
       customerId: req.user!.id,
       ...req.body,
     });
- 
+
     res.status(201).json({
       success: true,
       data: result,
@@ -20,39 +22,86 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
-//get all order
-const getAllOrder = async (_req: Request, res: Response) => {
+// ================= ADMIN =================
+
+const getAllOrders = async (_req: Request, res: Response) => {
+  const result = await orderService.getAllOrders();
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
+// ================= CUSTOMER =================
+
+const getMyOrders = async (req: Request, res: Response) => {
+  const result = await orderService.getCustomerOrders(req.user!.id);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
+// ================= PROVIDER =================
+
+const getProviderOrders = async (req: Request, res: Response) => {
+  const result = await orderService.getProviderOrders(req.user!.id);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
+// ================= GET ORDER BY ID (ROLE VALIDATION) =================
+
+const getOrderById = async (req: Request, res: Response) => {
   try {
-    const result = await orderServiceProvider.getAllOrder();
+    // const { orderId } = req.params;
+    const orderId = req.params.orderId as string;
+    const order = await orderService.getOrderById(orderId);
+
+    const user = req.user!;
+
+    // 🔐 Ownership validation
+    if (
+      user.role === "CUSTOMER" &&
+      order.customerId !== user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    if (
+      user.role === "PROVIDER" &&
+      order.providerId !== user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: order,
     });
-  } catch {
-    res.status(500).json({
+  } catch (error: any) {
+    res.status(404).json({
       success: false,
-      message: "Failed to fetch all order",
+      message: error.message,
     });
   }
 };
 
-//het order by id
-const getOrderById = async (req: Request, res: Response) => {
-    try {
-        const { orderId } = req.params
-        const result = await orderServiceProvider.getOrderById(orderId as string)
-        res.status(200).json(result)
-    } catch (e :any) {
-         res.status(404).json({
-      success: false,
-      message: e.message || "order not found",
-    });
-    }
-}
 export const orderController = {
-    createOrder ,
-    getAllOrder,
-    getOrderById
-                         
-}
+  createOrder,
+  getAllOrders,
+  getMyOrders,
+  getProviderOrders,
+  getOrderById,
+};
