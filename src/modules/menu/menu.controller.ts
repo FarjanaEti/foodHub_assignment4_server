@@ -8,7 +8,8 @@ import paginationSortingHelper from "../../helper/paginationSortingHelper";
 const createMeal = async (req: Request, res: Response) => {
   try {
 
-    const providerId = req.user?.providerProfile?.id;
+     const providerId = req.user?.providerProfile?.id;
+    // const providerId = "zT5q6haCEBgxADWDh9W0wPYDVkLMNSQe";
     console.log(providerId,req.user?.role)
 
 if (!providerId || req.user?.role !== UserRole.PROVIDER) {

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { orderService } from "./order.services";
 
-// ================= CREATE =================
+//  CREATE 
 
 const createOrder = async (req: Request, res: Response) => {
   try {
@@ -22,7 +22,7 @@ const createOrder = async (req: Request, res: Response) => {
   }
 };
 
-// ================= ADMIN =================
+//  ADMIN 
 
 const getAllOrders = async (_req: Request, res: Response) => {
   const result = await orderService.getAllOrders();
@@ -44,7 +44,7 @@ const getMyOrders = async (req: Request, res: Response) => {
   });
 };
 
-// ================= PROVIDER =================
+//  PROVIDER 
 
 const getProviderOrders = async (req: Request, res: Response) => {
   const result = await orderService.getProviderOrders(req.user!.id);
@@ -55,8 +55,7 @@ const getProviderOrders = async (req: Request, res: Response) => {
   });
 };
 
-// ================= GET ORDER BY ID (ROLE VALIDATION) =================
-
+// GET ORDER BY ID 
 const getOrderById = async (req: Request, res: Response) => {
   try {
     // const { orderId } = req.params;
@@ -65,7 +64,7 @@ const getOrderById = async (req: Request, res: Response) => {
 
     const user = req.user!;
 
-    // 🔐 Ownership validation
+   
     if (
       user.role === "CUSTOMER" &&
       order.customerId !== user.id

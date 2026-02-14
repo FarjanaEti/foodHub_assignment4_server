@@ -4,35 +4,35 @@ import auth, { UserRole } from "../../middleware/auth";
 
 const router = express.Router();
 
-// Create order (Customer)
+// Create order 
 router.post(
   "/",
   auth(UserRole.CUSTOMER),
   orderController.createOrder
 );
 
-// Customer - My Orders
+// Customer My Orders
 router.get(
   "/myOrders",
   auth(UserRole.CUSTOMER),
   orderController.getMyOrders
 );
 
-// Provider - Their Orders
+// Provider Their Orders
 router.get(
   "/providerOrders",
   auth(UserRole.PROVIDER),
   orderController.getProviderOrders
 );
 
-// Admin - All Orders
+// Admin All Orders
 router.get(
   "/allOrders",
   auth(UserRole.ADMIN),
   orderController.getAllOrders
 );
 
-// Get Order by ID (All roles but validated inside)
+// Get Order by ID 
 router.get(
   "/:orderId",
   auth(

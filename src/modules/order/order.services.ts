@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma";
 
-// ================= CREATE ORDER =================
+// CREATE ORDER 
 
 const createOrder = async (payload: {
   customerId: string;
@@ -57,7 +57,7 @@ const createOrder = async (payload: {
   return order;
 };
 
-// ================= ADMIN =================
+//  ADMIN 
 
 const getAllOrders = async () => {
   return prisma.order.findMany({
@@ -65,7 +65,7 @@ const getAllOrders = async () => {
   });
 };
 
-// ================= CUSTOMER =================
+//  CUSTOMER
 
 const getCustomerOrders = async (customerId: string) => {
   return prisma.order.findMany({
@@ -74,7 +74,7 @@ const getCustomerOrders = async (customerId: string) => {
   });
 };
 
-// ================= PROVIDER =================
+// PROVIDER 
 
 const getProviderOrders = async (providerId: string) => {
   return prisma.order.findMany({
@@ -83,7 +83,7 @@ const getProviderOrders = async (providerId: string) => {
   });
 };
 
-// ================= GET ORDER BY ID (WITH SECURITY) =================
+//  GET ORDER BY ID 
 
 const getOrderById = async (id: string) => {
   const order = await prisma.order.findUnique({

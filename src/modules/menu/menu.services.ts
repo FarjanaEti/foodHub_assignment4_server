@@ -69,9 +69,13 @@ const getAllMeals = async (query: any) => {
     where,
     skip,
     take: Number(limit),
-    orderBy: {
-      [sortBy]: sortOrder,
-    },
+    // orderBy: {
+    //   [sortBy]: sortOrder,
+    // },
+    orderBy: sortBy === "reviews"
+  ? { reviews: { _count: sortOrder } }
+  : { [sortBy]: sortOrder },
+
     include: {
       category: {
         select: { id: true, name: true },
