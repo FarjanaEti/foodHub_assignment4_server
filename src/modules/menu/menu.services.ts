@@ -101,6 +101,57 @@ const getAllMeals = async (query: any) => {
     },
   };
 };
+//logged provider get only his own meal not all other provider meal
+const getMyMeals = async (
+  providerId: string,
+  query: any
+) => {
+  const {
+    search,
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+  } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const where: any = {
+    providerId, 
+  };
+
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const meals = await prisma.meal.findMany({
+    where,
+    skip,
+    take: Number(limit),
+    orderBy: { [sortBy]: sortOrder },
+    include: {
+      category: { select: { id: true, name: true } },
+      _count: { select: { reviews: true } },
+    },
+  });
+
+  const total = await prisma.meal.count({ where });
+
+  return {
+    data: meals,
+    pagination: {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
+    },
+  };
+};
+
+
 
 //get meal by id
 const getMealById = async (id: string) => {
@@ -169,6 +220,7 @@ const deleteMeal = async (mealId: string, id: string) => {
 export const mealService = {
     createMeal,
     getAllMeals,
+    getMyMeals,
     getMealById,
     deleteMeal
 }

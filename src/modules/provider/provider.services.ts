@@ -94,6 +94,17 @@ const getAllProviders = async ({
           role: true,
         },
       },
+      meals:{
+        select:{
+          id:true,
+          available:true,
+          createdAt:true,
+          image:true,
+          description:true,
+          price:true,
+          title:true
+        }
+      },
       _count: {
         select: {
           meals: true,

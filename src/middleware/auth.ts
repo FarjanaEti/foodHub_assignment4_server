@@ -61,20 +61,15 @@ const auth = (...roles: UserRole[]) => {
 
       
       if (user.role === UserRole.PROVIDER) {
-        const profile = await prisma.providerProfile.findUnique({
-          where: { userId: user.id },
-          select: { id: true },
-        });
-          
-        if (!profile) {
-          return res.status(403).json({
-            success: false,
-            message: "Provider profile not found. Please complete your setup.",
-          });
-        }
+  const profile = await prisma.providerProfile.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
 
-        user.providerProfile = { id: profile.id };
-      }
+  if (profile) {
+    user.providerProfile = { id: profile.id };
+  }
+}
 
       req.user = user;
        

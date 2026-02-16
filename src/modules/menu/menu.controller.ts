@@ -9,7 +9,6 @@ const createMeal = async (req: Request, res: Response) => {
   try {
 
      const providerId = req.user?.providerProfile?.id;
-    // const providerId = "zT5q6haCEBgxADWDh9W0wPYDVkLMNSQe";
     console.log(providerId,req.user?.role)
 
 if (!providerId || req.user?.role !== UserRole.PROVIDER) {
@@ -85,6 +84,46 @@ const getAllMeals = async (req: Request, res: Response) => {
     });
   }
 };
+//get provider own meals
+const getMyMeals = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    if (!user || user.role !== "PROVIDER") {
+      return res.status(403).json({
+        success: false,
+        message: "Forbidden",
+      });
+    }
+
+    const providerId = user.providerProfile?.id;
+
+    if (!providerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Provider profile not found",
+      });
+    }
+
+    const result = await mealService.getMyMeals(
+      providerId,
+      req.query
+    );
+
+    res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: "Failed to fetch provider meals",
+      error: error.message,
+    });
+  }
+};
+
+
 //get meal by id
 const getMealById = async (req: Request, res: Response) => {
     try {
@@ -121,6 +160,7 @@ const deleteMeal = async (req: Request, res: Response) => {
 export const MealController = {
   createMeal,
   getAllMeals,
+  getMyMeals,
   getMealById,
   deleteMeal
 };
