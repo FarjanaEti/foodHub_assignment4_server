@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { auth as betterAuth } from '../lib/auth'
 import { prisma } from "../lib/prisma";
+import { fromNodeHeaders } from "better-auth/node";
 
 export enum UserRole {
   CUSTOMER = "CUSTOMER",
@@ -29,11 +30,15 @@ declare global {
 const auth = (...roles: UserRole[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            // get user session
-            const session = await betterAuth.api.getSession({
-                headers: req.headers as any
-            })
 
+            // get user session
+           const headers = fromNodeHeaders(req.headers);
+         
+
+      const session = await betterAuth.api.getSession({
+        headers,   
+      });
+          
             if (!session) {
                 return res.status(401).json({
                     success: false,
