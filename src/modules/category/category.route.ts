@@ -8,7 +8,11 @@ router.post(
    auth(UserRole.ADMIN),
    CategoryController.createCategory
 )
-
+router.patch(
+  "/categories/:id",
+  auth(UserRole.ADMIN),
+  CategoryController.toggleCategory
+);
 router.get("/categories", CategoryController.getAllCategories);
 
 export const categoryRouter: Router = router;

@@ -34,7 +34,20 @@ const getAllCategories = async (_req: Request, res: Response) => {
   }
 };
 
+const toggleCategory = async (req: Request, res: Response) => {
+   const id = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+  const result = await categoryService.toggleCategory(id);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
 export const CategoryController = {
   createCategory,
   getAllCategories,
+  toggleCategory
 };

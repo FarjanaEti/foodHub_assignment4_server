@@ -21,12 +21,27 @@ const createCategory = async (data: CreateCategoryInput) => {
 
 const getAllCategories = async () => {
   return prisma.category.findMany({
-    where: { isActive: true },
+    // where: { isActive: true },
     orderBy: { createdAt: "asc" },
   });
 };
 
+const toggleCategory = async (id: string) => {
+  const category = await prisma.category.findUnique({ where: { id } });
+
+  if (!category) {
+    throw new Error("Category not found");
+  }
+
+  return prisma.category.update({
+    where: { id },
+    data: { isActive: !category.isActive },
+  });
+};
+
+
 export const categoryService = {
   createCategory,
   getAllCategories,
+  toggleCategory
 };

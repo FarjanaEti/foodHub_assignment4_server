@@ -13,5 +13,6 @@ router.get(
 )
 
 router.get("/:providerId",providerController.getProviderById)
+router.delete("/:providerId",auth(UserRole.ADMIN),providerController.deleteProvider)
 
 export const providerRouter: Router = router;

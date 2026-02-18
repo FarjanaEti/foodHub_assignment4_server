@@ -154,12 +154,26 @@ const getProviderById=async(id:string)=>{
    return provider;
 }
 
+ const deleteProvider = async (providerId: string) => {
+  const providerProfile = await prisma.providerProfile.findUnique({
+    where: { id: providerId },
+  });
+
+  if (!providerProfile) {
+    throw new Error("Provider not found!");
+  }
+
+  return await prisma.providerProfile.delete({
+    where: { id: providerId },
+  });
+};
 
 
 
 export const providerService = {
           createProviderProfile,
           getAllProviders,
-          getProviderById                    
+          getProviderById,
+          deleteProvider                    
 }
   

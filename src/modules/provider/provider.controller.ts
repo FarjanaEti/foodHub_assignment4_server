@@ -73,10 +73,30 @@ const getProviderById=async(req:Request, res:Response)=>{
   }
 }
 
+const deleteProvider = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+        console.log(user?.id)
+        const { providerId } = req.params;
+        const result = await providerService.deleteProvider(providerId as string)
+        res.status(200).json({
+            success: true,
+            message: "provider deleted successfully!",
+            data: result
+        });
+    } catch (e) {
+        res.status(400).json({
+            error: "provider delete failed!",
+            details: e
+        })
+    }
+}
+
 
 
 export const providerController = {
   createProvider,
   getAllProviders,
-  getProviderById
+  getProviderById,
+  deleteProvider
 };
