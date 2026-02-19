@@ -76,12 +76,21 @@ const getCustomerOrders = async (customerId: string) => {
 
 // PROVIDER 
 
-const getProviderOrders = async (providerId: string) => {
+const getProviderOrders = async (userId: string) => {
+  const providerProfile = await prisma.providerProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!providerProfile) {
+    throw new Error("Provider profile not found");
+  }
+
   return prisma.order.findMany({
-    where: { providerId },
+    where: { providerId: providerProfile.id },
     orderBy: { createdAt: "desc" },
   });
 };
+
 
 //  GET ORDER BY ID 
 

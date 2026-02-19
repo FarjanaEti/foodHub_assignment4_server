@@ -47,26 +47,27 @@ const getMyOrders = async (req: Request, res: Response) => {
 //  PROVIDER 
 
 const getProviderOrders = async (req: Request, res: Response) => {
-  const result = await orderService.getProviderOrders(req.user!.id);
+  const orders = await orderService.getProviderOrders(req.user!.id);
 
   res.status(200).json({
     success: true,
-    data: result,
+    data: orders,
   });
 };
+
 
 // GET ORDER BY ID 
 const getOrderById = async (req: Request, res: Response) => {
   try {
-    // const { orderId } = req.params;
+   
     const orderId = req.params.orderId as string;
     const order = await orderService.getOrderById(orderId);
 
     const user = req.user!;
-
+  
    
     if (
-      user.role === "CUSTOMER" &&
+      user.role === "CUSTOMER" && 
       order.customerId !== user.id
     ) {
       return res.status(403).json({
@@ -75,15 +76,13 @@ const getOrderById = async (req: Request, res: Response) => {
       });
     }
 
-    if (
-      user.role === "PROVIDER" &&
-      order.providerId !== user.id
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
+    if (user.role === "PROVIDER" && !user.providerProfile) {
+  return res.status(403).json({
+    success: false,
+    message: "Provider profile not found",
+  });
+}
+
 
     res.status(200).json({
       success: true,
