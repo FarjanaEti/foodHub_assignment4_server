@@ -10,7 +10,8 @@ router.post(
     MealController.createMeal
 )
 router.get("/", MealController.getAllMeals);
-router.get("/myMeals",auth(UserRole.PROVIDER), MealController.getMyMeals);
+router.get("/myMeals",auth(UserRole.PROVIDER),
+ MealController.getMyMeals);
 
 router.get(
     "/:mealId",

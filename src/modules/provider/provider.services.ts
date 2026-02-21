@@ -9,28 +9,38 @@ type CreateProviderInput = Omit<
   "id" | "createdAt" | "updatedAt" | "userId"
 >;
 
+
+
 export const createProviderProfile = async (
   data: CreateProviderInput,
   userId: string
 ) => {
- 
-  const existingProvider = await prisma.providerProfile.findUnique({
-    where: { userId },
+  return await prisma.$transaction(async (tx) => {
+    const existingProvider = await tx.providerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (existingProvider) {
+      throw new Error("Provider profile already exists for this user");
+    }
+
+    const provider = await tx.providerProfile.create({
+      data: {
+        ...data,
+        userId,
+      },
+    });
+
+    
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        role: "PROVIDER",
+      },
+    });
+
+    return provider;
   });
-
-  if (existingProvider) {
-    throw new Error("Provider profile already exists for this user");
-  }
-
- 
-  const result = await prisma.providerProfile.create({
-    data: {
-      ...data,
-      userId,
-    },
-  });
-
-  return result;
 };
 
 //get all provider

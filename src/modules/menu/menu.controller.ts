@@ -43,7 +43,6 @@ const getAllMeals = async (req: Request, res: Response) => {
     const categoryId = req.query.categoryId as string | undefined;
     const providerId = req.query.providerId as string | undefined;
 
-    // boolean parsing
     let available: boolean | undefined = undefined;
     if (req.query.available === "true") available = true;
     if (req.query.available === "false") available = false;
@@ -56,9 +55,7 @@ const getAllMeals = async (req: Request, res: Response) => {
       ? Number(req.query.maxPrice)
       : undefined;
 
-    const { page, limit, sortBy, sortOrder } =
-      paginationSortingHelper(req.query);
-
+    // ❌ pagination removed
     const result = await mealService.getAllMeals({
       search: searchString,
       categoryId,
@@ -66,15 +63,11 @@ const getAllMeals = async (req: Request, res: Response) => {
       available,
       minPrice,
       maxPrice,
-      page,
-      limit,
-      sortBy,
-      sortOrder,
     });
 
     res.status(200).json({
       success: true,
-      ...result,
+      data: result,
     });
   } catch (error: any) {
     res.status(400).json({

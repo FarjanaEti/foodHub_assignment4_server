@@ -2,12 +2,28 @@ import { Request, Response } from "express";
 import { providerService } from "./provider.services";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
 
-const createProvider = async (req: Request, res: Response) => {
+
+
+export const createProvider = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
-   console.log(userId)
-   
+    const user = (req as any).user;
+
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
     const { restaurantName, address, phone, description } = req.body;
+
+    if (!restaurantName || !address || !phone || !description) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
 
     const result = await providerService.createProviderProfile(
       {
@@ -16,16 +32,16 @@ const createProvider = async (req: Request, res: Response) => {
         phone,
         description,
       },
-      userId
+      user.id
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Provider profile created successfully",
       data: result,
     });
   } catch (e: any) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: e.message || "Provider profile creation failed",
     });

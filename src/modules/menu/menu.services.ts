@@ -37,17 +37,11 @@ const getAllMeals = async (query: any) => {
     available,
     minPrice,
     maxPrice,
-    page = 1,
-    limit = 10,
-    sortBy = "createdAt",
-    sortOrder = "desc",
   } = query;
-
-  const skip = (Number(page) - 1) * Number(limit);
 
   const where: any = {};
 
-  // search
+  // 🔍 search
   if (search) {
     where.OR = [
       { title: { contains: search, mode: "insensitive" } },
@@ -55,25 +49,20 @@ const getAllMeals = async (query: any) => {
     ];
   }
 
-  // filters
+  // 🎯 filters
   if (categoryId) where.categoryId = categoryId;
   if (providerId) where.providerId = providerId;
-  if (available !== undefined) where.available = available === "true";
+  if (available !== undefined) where.available = available;
 
-  // price filter
-  if (minPrice) where.price = { gte: Number(minPrice) };
-  if (maxPrice)
-    where.price = { ...(where.price || {}), lte: Number(maxPrice) };
+  // 💰 price
+  if (minPrice || maxPrice) {
+    where.price = {};
+    if (minPrice) where.price.gte = Number(minPrice);
+    if (maxPrice) where.price.lte = Number(maxPrice);
+  }
 
   const meals = await prisma.meal.findMany({
-    where,
-    skip,
-    take: Number(limit),
-    
-    orderBy: sortBy === "reviews"
-  ? { reviews: { _count: sortOrder } }
-  : { [sortBy]: sortOrder },
-
+    where, // ✅ USE THE BUILT WHERE OBJECT
     include: {
       category: {
         select: { id: true, name: true },
@@ -81,23 +70,30 @@ const getAllMeals = async (query: any) => {
       provider: {
         select: { id: true },
       },
+      orderItems: {
+        select: {
+          id: true,
+          quantity: true,
+          price: true,
+          order: {
+            select: {
+              id: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+        },
+      },
       _count: {
         select: { reviews: true },
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
-  const total = await prisma.meal.count({ where });
-
-  return {
-    data: meals,
-    pagination: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / Number(limit)),
-    },
-  };
+  return meals;
 };
 //logged provider get only his own meal not all other provider meal
 const getMyMeals = async (
@@ -132,6 +128,20 @@ const getMyMeals = async (
     orderBy: { [sortBy]: sortOrder },
     include: {
       category: { select: { id: true, name: true } },
+      orderItems: {
+        select: {
+          id: true,
+          quantity: true,
+          price: true,
+          order: {
+            select: {
+              id: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+        },
+      },
       _count: { select: { reviews: true } },
     },
   });
@@ -194,6 +204,18 @@ const deleteMeal = async (mealId: string, id: string) => {
     if (!providerProfile) {
         throw new Error("Provider profile not found!");
     }
+
+    const orderCount = await prisma.orderItem.count({
+  where: { mealId }
+});
+
+if (orderCount > 0) {
+  return {
+    status: 409,
+    message: "This meal cannot be deleted because it already has orders."
+  };
+}
+
   const mealData = await prisma.meal.findFirst({
         where: {
             id: mealId,
