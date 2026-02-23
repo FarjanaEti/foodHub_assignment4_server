@@ -5,7 +5,7 @@ type CreateCategoryInput = {
 };
 
 const createCategory = async (data: CreateCategoryInput) => {
-  // prevent duplicates (extra safety)
+ 
   const exists = await prisma.category.findUnique({
     where: { name: data.name },
   });

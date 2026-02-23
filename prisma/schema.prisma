@@ -23,6 +23,7 @@ model User {
   providerProfile ProviderProfile?
   reviews         Review[]
   sessions        Session[]
+  carts           Cart[]
 
   @@map("users")
 }
@@ -68,8 +69,33 @@ model Meal {
   provider    ProviderProfile @relation(fields: [providerId], references: [id])
   orderItems  OrderItem[]
   reviews     Review[]
+  cartItems   CartItem[]
 
   @@map("meals")
+}
+
+model Cart {
+  id         String   @id @default(uuid())
+  userId     String
+  providerId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  items CartItem[]
+
+  customer User @relation(fields: [userId], references: [id])
+}
+
+model CartItem {
+  id       String   @id @default(uuid())
+  cartId   String
+  mealId   String
+  quantity Int
+  subtotal Decimal? @db.Decimal(10, 2)
+  cart     Cart     @relation(fields: [cartId], references: [id])
+  meal     Meal     @relation(fields: [mealId], references: [id])
+
+  @@unique([cartId, mealId])
 }
 
 model Order {

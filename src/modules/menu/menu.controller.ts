@@ -55,7 +55,7 @@ const getAllMeals = async (req: Request, res: Response) => {
       ? Number(req.query.maxPrice)
       : undefined;
 
-    // ❌ pagination removed
+  
     const result = await mealService.getAllMeals({
       search: searchString,
       categoryId,
@@ -135,7 +135,7 @@ const getMealById = async (req: Request, res: Response) => {
 const deleteMeal = async (req: Request, res: Response) => {
     try {
         const user = req.user;
-        console.log(user?.id)
+        
         const { mealId } = req.params;
         const result = await mealService.deleteMeal(mealId as string, user?.id as string)
         res.status(200).json({

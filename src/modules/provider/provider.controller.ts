@@ -92,7 +92,7 @@ const getProviderById=async(req:Request, res:Response)=>{
 const deleteProvider = async (req: Request, res: Response) => {
     try {
         const user = req.user;
-        console.log(user?.id)
+        
         const { providerId } = req.params;
         const result = await providerService.deleteProvider(providerId as string)
         res.status(200).json({

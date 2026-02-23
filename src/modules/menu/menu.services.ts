@@ -41,7 +41,7 @@ const getAllMeals = async (query: any) => {
 
   const where: any = {};
 
-  // 🔍 search
+ 
   if (search) {
     where.OR = [
       { title: { contains: search, mode: "insensitive" } },
@@ -49,12 +49,12 @@ const getAllMeals = async (query: any) => {
     ];
   }
 
-  // 🎯 filters
+  
   if (categoryId) where.categoryId = categoryId;
   if (providerId) where.providerId = providerId;
   if (available !== undefined) where.available = available;
 
-  // 💰 price
+ 
   if (minPrice || maxPrice) {
     where.price = {};
     if (minPrice) where.price.gte = Number(minPrice);
@@ -62,7 +62,7 @@ const getAllMeals = async (query: any) => {
   }
 
   const meals = await prisma.meal.findMany({
-    where, // ✅ USE THE BUILT WHERE OBJECT
+    where, 
     include: {
       category: {
         select: { id: true, name: true },

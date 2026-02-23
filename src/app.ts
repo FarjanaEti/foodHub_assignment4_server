@@ -7,6 +7,7 @@ import { providerRouter } from "./modules/provider/provider.route";
 import { categoryRouter } from "./modules/category/category.route";
 import { orderRouter } from "./modules/order/order.route";
 import { userRouter } from "./modules/allUser/user.route";
+import { cartRouter } from "./modules/cart/cart.route";
 
 const app: Application = express();
 
@@ -23,6 +24,7 @@ app.use("/api", categoryRouter);
 app.use("/provider", providerRouter);
 app.use("/order", orderRouter);
 app.use("/admin", userRouter);
+app.use("/customer", cartRouter);
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");
