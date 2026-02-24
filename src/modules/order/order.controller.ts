@@ -23,7 +23,6 @@ const createOrder = async (req: Request, res: Response) => {
 };
 
 //  ADMIN 
-
 const getAllOrders = async (_req: Request, res: Response) => {
   const result = await orderService.getAllOrders();
 
@@ -33,8 +32,7 @@ const getAllOrders = async (_req: Request, res: Response) => {
   });
 };
 
-// ================= CUSTOMER =================
-
+//  CUSTOMER 
 const getMyOrders = async (req: Request, res: Response) => {
   const result = await orderService.getCustomerOrders(req.user!.id);
 
@@ -55,7 +53,6 @@ const getProviderOrders = async (req: Request, res: Response) => {
   });
 };
 
-
 // GET ORDER BY ID 
 const getOrderById = async (req: Request, res: Response) => {
   try {
@@ -64,8 +61,6 @@ const getOrderById = async (req: Request, res: Response) => {
     const order = await orderService.getOrderById(orderId);
 
     const user = req.user!;
-  
-   
     if (
       user.role === "CUSTOMER" && 
       order.customerId !== user.id
@@ -82,8 +77,6 @@ const getOrderById = async (req: Request, res: Response) => {
     message: "Provider profile not found",
   });
 }
-
-
     res.status(200).json({
       success: true,
       data: order,
@@ -96,10 +89,33 @@ const getOrderById = async (req: Request, res: Response) => {
   }
 };
 
+//update order
+const updateOrder = async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
+
+  const { status } = req.body; 
+
+  if (!status) {
+    return res.status(400).json({
+      success: false,
+      message: "Status is required",
+    });
+  }
+
+  const result = await orderService.updateOrder(id, status);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
 export const orderController = {
   createOrder,
   getAllOrders,
   getMyOrders,
   getProviderOrders,
   getOrderById,
+  updateOrder
 };

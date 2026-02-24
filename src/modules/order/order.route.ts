@@ -42,5 +42,7 @@ router.get(
   ),
   orderController.getOrderById
 );
+//update order
+router.patch("/:id",auth(UserRole.PROVIDER),orderController.updateOrder)
 
 export const orderRouter: Router = router;

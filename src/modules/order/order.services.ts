@@ -1,3 +1,4 @@
+import { OrderStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 // CREATE ORDER 
@@ -91,14 +92,16 @@ const getProviderOrders = async (userId: string) => {
   });
 };
 
-
 //  GET ORDER BY ID 
-
 const getOrderById = async (id: string) => {
   const order = await prisma.order.findUnique({
     where: { id },
     include: {
-      items: true,
+      items: {
+    include: {
+      meal: true,
+    }
+  },
       customer: {
         select: { id: true, email: true },
       },
@@ -115,10 +118,26 @@ const getOrderById = async (id: string) => {
   return order;
 };
 
+//update order
+const updateOrder = async (id: string, status: OrderStatus) => {
+  const order = await prisma.order.findUnique({ where: { id } });
+ 
+
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  return prisma.order.update({
+    where: { id },
+    data: { status }, 
+  });
+};
+
 export const orderService = {
   createOrder,
   getAllOrders,
   getCustomerOrders,
   getProviderOrders,
   getOrderById,
+  updateOrder
 };

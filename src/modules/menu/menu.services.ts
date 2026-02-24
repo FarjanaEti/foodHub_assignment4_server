@@ -84,6 +84,7 @@ const getAllMeals = async (query: any) => {
           },
         },
       },
+      reviews:true,
       _count: {
         select: { reviews: true },
       },
