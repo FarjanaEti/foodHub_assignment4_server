@@ -22,4 +22,8 @@ router.delete(
     auth(UserRole.PROVIDER),
     MealController.deleteMeal
 )
+
+router.delete("/:mealId",auth(UserRole.PROVIDER),
+MealController.updateMeal
+)
 export const MealRouter: Router = router;

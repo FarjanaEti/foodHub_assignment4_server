@@ -39,7 +39,6 @@ const toggleCategory = async (id: string) => {
   });
 };
 
-
 export const categoryService = {
   createCategory,
   getAllCategories,

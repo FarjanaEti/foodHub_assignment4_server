@@ -122,7 +122,6 @@ const getOrderById = async (id: string) => {
 const updateOrder = async (id: string, status: OrderStatus) => {
   const order = await prisma.order.findUnique({ where: { id } });
  
-
   if (!order) {
     throw new Error("Order not found");
   }

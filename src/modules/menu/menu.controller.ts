@@ -155,8 +155,6 @@ const getMyMeals = async (req: Request, res: Response) => {
     });
   }
 };
-
-
 //get meal by id
 const getMealById = async (req: Request, res: Response) => {
     try {
@@ -171,6 +169,19 @@ const getMealById = async (req: Request, res: Response) => {
     });
     }
 }
+//provider update their meal
+// provider update meal (name, price, availability)
+const updateMeal = async (req: Request, res: Response) => {
+ const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const payload = req.body;
+
+  const result = await mealService.updateMeal(id, payload);
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
 //meal delete by provider
 const deleteMeal = async (req: Request, res: Response) => {
     try {
@@ -195,5 +206,6 @@ export const MealController = {
   getAllMeals,
   getMyMeals,
   getMealById,
+  updateMeal,
   deleteMeal
 };

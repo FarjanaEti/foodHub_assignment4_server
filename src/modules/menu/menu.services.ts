@@ -179,8 +179,6 @@ const getMyMeals = async (
   };
 };
 
-
-
 //get meal by id
 const getMealById = async (id: string) => {
   const meal = await prisma.meal.findUnique({
@@ -212,7 +210,26 @@ const getMealById = async (id: string) => {
 
   return meal;
 };
+//provider update their meal
+const updateMeal = async (
+  id: string,
+  payload: { title?: string; price?: number; available?: boolean }
+) => {
+  const meal = await prisma.meal.findUnique({ where: { id } });
 
+  if (!meal) {
+    throw new Error("Meal not found");
+  }
+
+  return prisma.meal.update({
+    where: { id },
+    data: {
+      title: payload.title ?? meal.title,
+      price: payload.price ?? meal.price,
+      available: payload.available ?? meal.available,
+    },
+  });
+};
 //provider delete a meal
 const deleteMeal = async (mealId: string, id: string) => {
   
@@ -262,5 +279,6 @@ export const mealService = {
     getAllMeals,
     getMyMeals,
     getMealById,
+    updateMeal,
     deleteMeal
 }
