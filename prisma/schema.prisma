@@ -55,21 +55,28 @@ model Category {
 }
 
 model Meal {
-  id          String          @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
   price       Float
   image       String?
-  available   Boolean         @default(true)
-  providerId  String
-  categoryId  String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  category    Category        @relation(fields: [categoryId], references: [id])
-  provider    ProviderProfile @relation(fields: [providerId], references: [id])
-  orderItems  OrderItem[]
-  reviews     Review[]
-  cartItems   CartItem[]
+  available   Boolean @default(true)
+
+  cuisine  String?
+  dietType String?
+
+  providerId String
+  categoryId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category Category        @relation(fields: [categoryId], references: [id])
+  provider ProviderProfile @relation(fields: [providerId], references: [id])
+
+  orderItems OrderItem[]
+  reviews    Review[]
+  cartItems  CartItem[]
 
   @@map("meals")
 }

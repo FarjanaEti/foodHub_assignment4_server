@@ -1,68 +1,108 @@
 import { Request, Response } from "express";
 import { mealService } from "./menu.services";
 import { UserRole } from "../../middleware/auth";
-import paginationSortingHelper from "../../helper/paginationSortingHelper";
 
 
-
-const createMeal = async (req: Request, res: Response) => {
+export const createMeal = async (req: Request, res: Response) => {
   try {
+    const providerId = req.user?.providerProfile?.id;
 
-     const providerId = req.user?.providerProfile?.id;
-    console.log(providerId,req.user?.role)
+    //  Role  validation
+    if (!providerId || req.user?.role !== UserRole.PROVIDER) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Only providers can create meals.",
+      });
+    }
 
-if (!providerId || req.user?.role !== UserRole.PROVIDER) {
-  return res.status(403).json({
-    success: false,
-    message: "Access denied. Only providers can create meals.",
-  });
-}
+    const {
+      title,
+      description,
+      price,
+      categoryId,
+      cuisine,
+      dietType,
+      image,
+    } = req.body;
 
-    const result = await mealService.createMeal(providerId, req.body);
+   
+    if (
+      !title ||
+      !price ||
+      !categoryId ||
+      !cuisine ||
+      !dietType
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
 
-    res.status(201).json({
+    if (typeof price !== "number" || price <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Price must be a number greater than 0",
+      });
+    }
+
+    if (image && typeof image !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Image must be a valid URL string",
+      });
+    }
+
+    const meal = await mealService.createMeal(providerId, {
+      title,
+      description,
+      price,
+      categoryId,
+      cuisine,
+      dietType,
+      image,
+    });
+
+    return res.status(201).json({
       success: true,
-      data: result,
+      data: meal,
     });
   } catch (error: any) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
-      message: error.message,
+      message: error.message || "Failed to create meal",
     });
   }
 };
 
 //grt all meals
-const getAllMeals = async (req: Request, res: Response) => {
+export const getAllMeals = async (req: Request, res: Response) => {
   try {
-    const { search } = req.query;
-
-    const searchString =
-      typeof search === "string" ? search : undefined;
-
-    const categoryId = req.query.categoryId as string | undefined;
-    const providerId = req.query.providerId as string | undefined;
-
-    let available: boolean | undefined = undefined;
-    if (req.query.available === "true") available = true;
-    if (req.query.available === "false") available = false;
-
-    const minPrice = req.query.minPrice
-      ? Number(req.query.minPrice)
-      : undefined;
-
-    const maxPrice = req.query.maxPrice
-      ? Number(req.query.maxPrice)
-      : undefined;
-
-  
-    const result = await mealService.getAllMeals({
-      search: searchString,
+    const {
+      search,
       categoryId,
       providerId,
-      available,
+      cuisine,
+      dietType,
       minPrice,
       maxPrice,
+      available,
+    } = req.query;
+
+    const result = await mealService.getAllMeals({
+      search: typeof search === "string" ? search : undefined,
+      categoryId: typeof categoryId === "string" ? categoryId : undefined,
+      providerId: typeof providerId === "string" ? providerId : undefined,
+      cuisine: typeof cuisine === "string" ? cuisine : undefined,
+      dietType: typeof dietType === "string" ? dietType : undefined,
+      available:
+        available === "true"
+          ? true
+          : available === "false"
+          ? false
+          : undefined,
+      minPrice: typeof minPrice === "string" ? Number(minPrice) : undefined,
+      maxPrice: typeof maxPrice === "string" ? Number(maxPrice) : undefined,
     });
 
     res.status(200).json({
