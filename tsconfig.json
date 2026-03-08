@@ -1,10 +1,39 @@
+// {
+//   "compilerOptions": {
+//     "module": "ESNext",
+//     "moduleResolution": "bundler",
+//     "target": "ES2023",
+//     "strict": true,
+//     "esModuleInterop": true,
+//     // "ignoreDeprecations": "6.0"
+//   }
+// }
+// add new configation with more strict options and file layout settings
 {
   "compilerOptions": {
+    // File Layout
+    // "rootDir": "./src",
+    "outDir": "./dist",
+    "types": [],
+    "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "target": "ES2023",
-    "strict": true,
     "esModuleInterop": true,
-    // "ignoreDeprecations": "6.0"
-  }
+    "ignoreDeprecations": "5.0",
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+  },
+  "include": [
+    "src/**/*",
+    "prisma.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

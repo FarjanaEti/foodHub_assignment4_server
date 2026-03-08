@@ -308,7 +308,22 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  trustedOrigins: [process.env.BETTER_AUTH_ORIGINS],
+  baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [process.env.APP_URL || "http://localhost:3000"],
+  session: {
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60
+    }
+  },
+  advanced: {
+    cookiePrefix: "better-auth",
+    useSecureCookies: process.env.NODE_ENV === "production",
+    crossSubDomainCookies: {
+      enabled: false
+    },
+    disableCSRFCheck: true
+  },
   user: {
     additionalFields: {
       role: {
@@ -1674,16 +1689,29 @@ var reviewRouter = router7;
 
 // src/app.ts
 var app = express8();
+var allowedOrigins = [
+  process.env.APP_URL || "http://localhost:3000",
+  process.env.PROD_APP_URL
+].filter(Boolean);
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://assignment4-client-lilac.vercel.app"
-    ],
-    credentials: true
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/next-blog-client.*\.vercel\.app$/.test(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"]
   })
 );
-app.options("*", cors());
+app.use(express8.json());
+app.set("trust proxy", 1);
 app.use(express8.json());
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/provider/meals", MealRouter);
@@ -1699,7 +1727,18 @@ app.get("/", (req, res) => {
 var app_default = app;
 
 // src/server.ts
-var server_default = app_default;
-export {
-  server_default as default
-};
+var PORT = process.env.PORT || 4e3;
+async function main() {
+  try {
+    prisma.$connect();
+    console.log("database connect successfully");
+    app_default.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("An error occurred:", err);
+    await prisma.$disconnect();
+    process.exit(1);
+  }
+}
+main();
