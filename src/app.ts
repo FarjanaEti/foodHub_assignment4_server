@@ -12,16 +12,23 @@ import { reviewRouter } from "./modules/review/review.route";
 
 const app: Application = express();
 
-app.use(cors({
-    origin: process.env.APP_URL || "http://localhost:4000", 
-    credentials: true
-}))
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://assignment4-client-lilac.vercel.app"
+    ],
+    credentials: true,
+  })
+);
+
+app.options("*", cors());
 
 app.use(express.json());
 app.use('/api/auth', toNodeHandler(auth));
 
 app.use("/provider/meals", MealRouter);
-app.use("/api", categoryRouter);
+app.use("/category", categoryRouter);
 app.use("/provider", providerRouter);
 app.use("/order", orderRouter);
 app.use("/admin", userRouter);
