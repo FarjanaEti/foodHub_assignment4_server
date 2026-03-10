@@ -19,23 +19,43 @@ export const auth = betterAuth({
         provider: "postgresql", 
     }),
     baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.APP_URL || "http://localhost:3000"],
+  trustedOrigins: [ "https://assignment4-client-lilac.vercel.app",
+    "https://*.vercel.app",
+    "http://localhost:3000"],
+
+cookies: {
+  sessionToken: {
+    name: "better-auth.session_token",
+    attributes: {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      path: "/",
+       domain: ".vercel.app"
+    },
+  },
+},
 
   session: {
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,
     },
+     expiresIn: 60 * 60 * 24 * 7, 
   },
 
-  advanced: {
+  
+   
+    advanced: {
     cookiePrefix: "better-auth",
     useSecureCookies: process.env.NODE_ENV === "production",
     crossSubDomainCookies: {
       enabled: false,
     },
-    disableCSRFCheck: true,
+    disableCSRFCheck: true, 
   },
+
+
     user: {
     additionalFields: {
       role: {
@@ -52,7 +72,7 @@ export const auth = betterAuth({
   },
      emailAndPassword: { 
     enabled: true, 
-    autoSignIn: false,
+    autoSignIn: true,
     requireEmailVerification: true
   }, 
   emailVerification: {
@@ -60,7 +80,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
      try {
-        const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`
+        // const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`
         const info = await transporter.sendMail({
           from: '"Food Hub" <foodhub@ph.com>',
           to: user.email,
@@ -163,7 +183,7 @@ export const auth = betterAuth({
       </p>
 
       <div class="button-wrapper">
-        <a href="${verificationUrl}" class="verify-button">
+        <a href="${url}" class="verify-button">
           Verify Email
         </a>
       </div>
@@ -206,7 +226,7 @@ export const auth = betterAuth({
     }
   },
 
-  //google signin(frontend baki)
+
   
   socialProviders: {
     google: {
@@ -214,6 +234,8 @@ export const auth = betterAuth({
       accessType: "offline",
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+       scope: ["email", "profile","openid"],
+        skipStateCookieCheck: true
     },
   }
    

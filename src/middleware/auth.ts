@@ -19,9 +19,9 @@ declare global {
         name: string;
         role: string;
         emailVerified: boolean;
-        providerProfile?: {
-          id: string | undefined;
-        };
+         providerProfile?: {
+      id: string;
+    };
       }
     }
   }
@@ -54,14 +54,13 @@ const auth = (...roles: UserRole[]) => {
                 })
             }
 
-            const user = {
-                id: session.user.id,
-                email: session.user.email,
-                name: session.user.name,
-                role: session.user.role as UserRole,
-                emailVerified: session.user.emailVerified,
-                providerProfile: undefined as { id: string } | undefined,
-            }
+            const user: Request["user"] = {
+             id: session.user.id,
+             email: session.user.email,
+             name: session.user.name,
+             role: session.user.role as UserRole,
+             emailVerified: session.user.emailVerified,
+                };
 
 
       

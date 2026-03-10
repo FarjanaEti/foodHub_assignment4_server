@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/server.js",
-  
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx tsx watch src/server.ts",
-     "build": "prisma generate && tsup",
+    "build": "prisma generate && tsup",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -22,14 +21,14 @@
     "@types/nodemailer": "^7.0.9",
     "@types/pg": "^8.16.0",
     "prisma": "^7.3.0",
-     "tsup": "^8.5.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
-    "better-auth": "^1.4.17",
+    "better-auth": "^1.5.4",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
