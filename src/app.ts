@@ -10,6 +10,8 @@ import { userRouter } from "./modules/allUser/user.route";
 import { cartRouter } from "./modules/cart/cart.route";
 import { reviewRouter } from "./modules/review/review.route";
 
+
+
 const app: Application = express();
 
 const allowedOrigins = [
@@ -39,12 +41,14 @@ app.use(
     exposedHeaders: ["Set-Cookie"],
   }),
 );
-app.use(express.json());
+
 
 app.set("trust proxy", 1);
 
 app.use(express.json());
 app.use('/api/auth', toNodeHandler(auth));
+
+
 
 app.use("/provider/meals", MealRouter);
 app.use("/category", categoryRouter);
@@ -53,6 +57,8 @@ app.use("/order", orderRouter);
 app.use("/admin", userRouter);
 app.use("/customer", cartRouter);
 app.use("/customer", reviewRouter);
+
+
 
 app.get("/", (req, res) => {
     res.send("Hello, World!");

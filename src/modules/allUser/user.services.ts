@@ -12,8 +12,6 @@ const getAllUser = async () => {
 };
 
 //update user active status  and role 
-
-
 const toggleUserStatus = async (id: string) => {
   const user = await prisma.user.findUnique({ where: { id } });
 
