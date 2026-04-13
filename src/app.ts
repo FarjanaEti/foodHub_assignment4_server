@@ -45,8 +45,8 @@ app.use(
 
 app.set("trust proxy", 1);
 
-app.use(express.json());
 app.use('/api/auth', toNodeHandler(auth));
+app.use(express.json());
 
 
 

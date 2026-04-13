@@ -7,6 +7,7 @@ const createOrder = async (payload: {
   customerId: string;
   providerId: string;
   address: string;
+  paymentMethod: "COD" | "ONLINE";
   items: {
     mealId: string;
     quantity: number;
@@ -46,6 +47,15 @@ const createOrder = async (payload: {
       providerId: payload.providerId,
       address: payload.address,
       totalAmount,
+
+      paymentMethod: payload.paymentMethod,
+      paymentStatus: "PENDING",
+
+      status:
+        payload.paymentMethod === "COD"
+          ? "PLACED"
+          : "PENDING",
+
       items: {
         create: orderItems,
       },

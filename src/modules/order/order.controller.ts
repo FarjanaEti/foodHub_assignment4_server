@@ -2,18 +2,27 @@ import { Request, Response } from "express";
 import { orderService } from "./order.services";
 
 //  CREATE 
-
 const createOrder = async (req: Request, res: Response) => {
   try {
+    const { items, paymentMethod, providerId, address } = req.body;
+
+    console.log(req.body)
+    const parsedItems =
+      typeof items === "string" ? JSON.parse(items) : items;
+
     const result = await orderService.createOrder({
       customerId: req.user!.id,
-      ...req.body,
+      providerId,
+      address,
+      paymentMethod,
+      items: parsedItems, 
     });
 
     res.status(201).json({
       success: true,
       data: result,
     });
+
   } catch (error: any) {
     res.status(400).json({
       success: false,
@@ -94,6 +103,13 @@ const updateOrder = async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id)
     ? req.params.id[0]
     : req.params.id;
+
+     if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: "Order ID is required",
+    });
+  }
 
   const { status } = req.body; 
 

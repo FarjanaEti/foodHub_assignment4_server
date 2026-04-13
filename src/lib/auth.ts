@@ -12,6 +12,8 @@ const transporter = nodemailer.createTransport({
     pass: process.env.APP_PASS,
   },
 });
+//localhost
+const isProduction = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
@@ -31,8 +33,10 @@ export const auth = betterAuth({
       name: "better-auth.session_token",
       attributes: {
         httpOnly: true,
-        sameSite: "none",
-        secure: true,
+        // sameSite: "none",
+        // secure: true,
+         sameSite: isProduction ? "none" : "lax",  
+        secure: isProduction,
         path: "/",
       },
     },
