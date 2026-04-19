@@ -5,8 +5,6 @@ import { orderService } from "./order.services";
 const createOrder = async (req: Request, res: Response) => {
   try {
     const { items, paymentMethod, providerId, address } = req.body;
-
-    console.log(req.body)
     const parsedItems =
       typeof items === "string" ? JSON.parse(items) : items;
 

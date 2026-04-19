@@ -12,7 +12,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.20.0",
   "type": "module",
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -33,6 +32,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "nodemailer": "^7.0.13",
-    "pg": "^8.17.2"
+    "pg": "^8.17.2",
+    "sslcommerz-lts": "^1.2.0"
   }
 }
