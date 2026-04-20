@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { mealService } from "./menu.services";
+import { GetAllMealsParams, mealService } from "./menu.services";
 import { UserRole } from "../../middleware/auth";
 
 
@@ -79,35 +79,31 @@ export const createMeal = async (req: Request, res: Response) => {
 export const getAllMeals = async (req: Request, res: Response) => {
   try {
     const {
-      search,
-      categoryId,
-      providerId,
-      cuisine,
-      dietType,
-      minPrice,
-      maxPrice,
-      available,
+      search, categoryId, providerId, cuisine,
+      dietType, minPrice, maxPrice, available,
+      page, limit,
     } = req.query;
 
-    const result = await mealService.getAllMeals({
-      search: typeof search === "string" ? search : undefined,
-      categoryId: typeof categoryId === "string" ? categoryId : undefined,
-      providerId: typeof providerId === "string" ? providerId : undefined,
-      cuisine: typeof cuisine === "string" ? cuisine : undefined,
-      dietType: typeof dietType === "string" ? dietType : undefined,
-      available:
-        available === "true"
-          ? true
-          : available === "false"
-          ? false
-          : undefined,
-      minPrice: typeof minPrice === "string" ? Number(minPrice) : undefined,
-      maxPrice: typeof maxPrice === "string" ? Number(maxPrice) : undefined,
-    });
+    const params: GetAllMealsParams = {};  
+
+    if (typeof search === "string" && search) params.search = search;
+    if (typeof categoryId === "string" && categoryId) params.categoryId = categoryId;
+    if (typeof providerId === "string" && providerId) params.providerId = providerId;
+    if (typeof cuisine === "string" && cuisine) params.cuisine = cuisine;
+    if (typeof dietType === "string" && dietType) params.dietType = dietType;
+    if (available === "true") params.available = true;
+    if (available === "false") params.available = false;
+    if (typeof minPrice === "string" && minPrice) params.minPrice = Number(minPrice);
+    if (typeof maxPrice === "string" && maxPrice) params.maxPrice = Number(maxPrice);
+    params.page = typeof page === "string" && page ? Number(page) : 1;
+    params.limit = typeof limit === "string" && limit ? Number(limit) : 12;
+
+    const result = await mealService.getAllMeals(params);
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: result.data,
+      pagination: result.pagination,
     });
   } catch (error: any) {
     res.status(400).json({
@@ -172,15 +168,21 @@ const getMealById = async (req: Request, res: Response) => {
 //provider update their meal
 // provider update meal (name, price, availability)
 const updateMeal = async (req: Request, res: Response) => {
- const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const payload = req.body;
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
-  const result = await mealService.updateMeal(id, payload);
+    if (!id) {
+      res.status(400).json({ success: false, message: "Meal ID is required" });
+      return;
+    }
 
-  res.status(200).json({
-    success: true,
-    data: result,
-  });
+    const payload = req.body;
+    const result = await mealService.updateMeal(id, payload);
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    res.status(400).json({ success: false, message: error.message || "Update failed" });
+  }
 };
 //meal delete by provider
 const deleteMeal = async (req: Request, res: Response) => {

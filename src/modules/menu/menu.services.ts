@@ -54,10 +54,8 @@ const createMeal = async (
   });
 };
 
-
-
 //get all meal
-type GetAllMealsParams = {
+export type GetAllMealsParams = {
   search?: string;
   categoryId?: string;
   providerId?: string;
@@ -66,6 +64,8 @@ type GetAllMealsParams = {
   minPrice?: number;
   maxPrice?: number;
   available?: boolean;
+  page?: number;
+  limit?: number;
 };
 
 const getAllMeals = async (params: GetAllMealsParams) => {
@@ -78,6 +78,8 @@ const getAllMeals = async (params: GetAllMealsParams) => {
     minPrice,
     maxPrice,
     available,
+     page = 1, 
+     limit = 12,
   } = params;
 
   const where: any = {};
@@ -103,15 +105,28 @@ const getAllMeals = async (params: GetAllMealsParams) => {
     if (minPrice !== undefined) where.price.gte = minPrice;
     if (maxPrice !== undefined) where.price.lte = maxPrice;
   }
+    const skip = (page - 1) * limit;
 
-  return prisma.meal.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: {
-      category: true,
-      provider: true,
+    const [meals, total] = await Promise.all([ 
+    prisma.meal.findMany({
+      where,
+      skip,        
+      take: limit, 
+      orderBy: { createdAt: "desc" },
+      include: { category: true, provider: true },
+    }),
+    prisma.meal.count({ where }), 
+  ]);
+
+  return {
+    data: meals,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     },
-  });
+  };
 };
 
 
