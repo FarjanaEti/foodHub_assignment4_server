@@ -125,11 +125,21 @@ const updateOrder = async (req: Request, res: Response) => {
     data: result,
   });
 };
+
+export const getMostOrderedMeals = async (_req: Request, res: Response) => {
+  try {
+    const result = await orderService.getMostOrderedMeals();
+    res.status(200).json({ success: true, data: result });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch most ordered meals" });
+  }
+};
 export const orderController = {
   createOrder,
   getAllOrders,
   getMyOrders,
   getProviderOrders,
   getOrderById,
-  updateOrder
+  updateOrder,
+  getMostOrderedMeals
 };

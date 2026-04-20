@@ -71,3 +71,10 @@ app.get("/", (req, res) => {
     res.send("Hello, World!");
 });
 export default app;
+
+
+
+
+// tarpor je user purchase korlo se kon product purchase
+//  korlo setar ekta table and total koto takar purchase 
+// korlo eisob ektu din tahole overall ekta pattern hobe

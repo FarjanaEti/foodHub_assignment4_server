@@ -8,5 +8,6 @@ router.post(
  reviewController.createReview
 );
 router.get("/allReview",reviewController.getAllReview)
+router.get("/top-rated", reviewController.getTopRatedMeals);
 
 export const reviewRouter: Router = router;

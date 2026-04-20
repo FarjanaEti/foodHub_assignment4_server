@@ -142,11 +142,36 @@ const updateOrder = async (id: string, status: OrderStatus) => {
   });
 };
 
+const getMostOrderedMeals = async () => {
+  const items = await prisma.orderItem.groupBy({
+    by: ["mealId"],
+    _sum: { quantity: true },
+    _count: { mealId: true },
+    orderBy: { _sum: { quantity: "desc" } },
+    take: 10,
+  });
+
+  const mealIds = items.map((i) => i.mealId);
+  const mealDetails = await prisma.meal.findMany({
+    where: { id: { in: mealIds } },
+    select: { id: true, title: true, price: true, image: true,description: true, },
+  });
+
+  return items.map((i) => ({
+    mealId: i.mealId,
+    totalQuantity: i._sum.quantity ?? 0,
+    orderCount: i._count.mealId,
+    meal: mealDetails.find((d) => d.id === i.mealId),
+  }));
+};
+
+
 export const orderService = {
   createOrder,
   getAllOrders,
   getCustomerOrders,
   getProviderOrders,
   getOrderById,
-  updateOrder
+  updateOrder,
+  getMostOrderedMeals
 };

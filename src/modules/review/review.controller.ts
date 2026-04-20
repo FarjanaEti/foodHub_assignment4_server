@@ -38,7 +38,17 @@ const getAllReview = async (_req: Request, res: Response) => {
   }
 };
 
+export const getTopRatedMeals = async (_req: Request, res: Response) => {
+  try {
+    const result = await reviewServices.getTopRatedMeals();
+    res.status(200).json({ success: true, data: result });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch top rated meals" });
+  }
+};
+
 export const reviewController={
        createReview ,
-       getAllReview                      
+       getAllReview ,
+       getTopRatedMeals                     
 }

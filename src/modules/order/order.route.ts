@@ -11,12 +11,16 @@ router.post(
   orderController.createOrder
 );
 
+router.get("/most-ordered", orderController.getMostOrderedMeals);
+
+
 // Customer My Orders
 router.get(
   "/myOrders",
   auth(UserRole.CUSTOMER),
   orderController.getMyOrders
 );
+
 
 // Provider Their Orders
 router.get(

@@ -8,7 +8,6 @@ type CreateReviewInput = {
 };
 
 const createReview = async (data: CreateReviewInput) => {
-  // 1. Check user ordered this meal and it's delivered
   const orderItem = await prisma.orderItem.findFirst({
     where: {
       mealId: data.mealId,
@@ -23,7 +22,6 @@ const createReview = async (data: CreateReviewInput) => {
     throw new Error("You can only review meals from delivered orders");
   }
 
-  // 2. Prevent duplicate review (enforced by @@unique too)
   const existing = await prisma.review.findFirst({
     where: {
       userId: data.userId,
@@ -35,13 +33,12 @@ const createReview = async (data: CreateReviewInput) => {
     throw new Error("You already reviewed this meal");
   }
 
-  // 3. Create review
   return prisma.review.create({
     data: {
-      userId: data.userId,
-      mealId: data.mealId,
       rating: data.rating,
-      comment: data.comment,
+      comment: data.comment ?? null, // ← fix: undefined → null
+      user: { connect: { id: data.userId } },   // ← fix: use connect
+      meal: { connect: { id: data.mealId } },   // ← fix: use connect
     },
   });
 };
@@ -51,7 +48,33 @@ const getAllReview = async () => {
     orderBy: { createdAt: "asc" },
   });
 };
-export const reviewServices={
-      createReview,
-      getAllReview                        
-}
+
+const getTopRatedMeals = async () => {
+  const meals = await prisma.review.groupBy({
+    by: ["mealId"],
+    _avg: { rating: true },
+    _count: { rating: true },
+    orderBy: { _avg: { rating: "desc" } },
+    take: 10,
+  });
+
+  // Get meal details for each
+  const mealIds = meals.map((m) => m.mealId);
+  const mealDetails = await prisma.meal.findMany({
+    where: { id: { in: mealIds } },
+    select: { id: true, title: true, price: true, image: true, description: true, },
+  });
+
+  return meals.map((m) => ({
+    mealId: m.mealId,
+    avgRating: Math.round((m._avg.rating ?? 0) * 10) / 10,
+    reviewCount: m._count.rating,
+    meal: mealDetails.find((d) => d.id === m.mealId),
+  }));
+};
+
+export const reviewServices = {
+  createReview,
+  getAllReview,
+  getTopRatedMeals, 
+};

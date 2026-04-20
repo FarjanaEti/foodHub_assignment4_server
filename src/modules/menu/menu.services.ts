@@ -40,16 +40,16 @@ const createMeal = async (
 
   
   return prisma.meal.create({
-    data: {
+   data: {
       title: data.title.trim(),
-      description: data.description?.trim(),
+      description: data.description?.trim() ?? null, 
       price: data.price,
-      categoryId: data.categoryId,
       cuisine: data.cuisine,
       dietType: data.dietType,
-      image: data.image,
-      providerId,
-      available: true, 
+      image: data.image ?? null, 
+      available: true,
+      category: { connect: { id: data.categoryId } }, 
+      provider: { connect: { id: providerId } },       
     },
   });
 };
