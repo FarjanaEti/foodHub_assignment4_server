@@ -45,6 +45,16 @@ const getAllCart = async (_req: Request, res: Response) => {
   }
 };
 
+export const clearCart = async (req: Request, res: Response) => {
+  try {
+    const customerId = req.user!.id;
+    await cartService.clearCart(customerId);
+    res.status(200).json({ success: true, message: "Cart cleared" });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const deleteCart = async (req: Request, res: Response) => {
     try {
        
@@ -66,5 +76,6 @@ const deleteCart = async (req: Request, res: Response) => {
 export const cartController={
   addToCart,
   getAllCart,
-  deleteCart
+  deleteCart,
+  clearCart
 }

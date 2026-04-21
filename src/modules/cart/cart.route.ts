@@ -8,12 +8,10 @@ router.post(
     "/cart",auth(UserRole.CUSTOMER),
     cartController.addToCart
 )
-// router.patch(
-//   "/categories/:id",
-//   auth(UserRole.ADMIN),
-// );
+
 router.get("/allCart", auth(UserRole.CUSTOMER),
 cartController.getAllCart);
+router.delete("/clearCart", auth(UserRole.CUSTOMER), cartController.clearCart);
 router.delete("/:cartId", auth(UserRole.CUSTOMER),
 cartController.deleteCart);
 

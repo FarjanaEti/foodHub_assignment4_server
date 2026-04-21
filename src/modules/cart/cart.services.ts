@@ -86,6 +86,22 @@ const getMyCart = async (userId: string) => {
   });
 };
 
+const clearCart = async (customerId: string) => {
+  const cart = await prisma.cart.findFirst({
+    where: { customer: { id: customerId } },
+  });
+
+  if (!cart) return;
+
+  await prisma.cartItem.deleteMany({
+    where: { cartId: cart.id },
+  });
+
+  await prisma.cart.delete({
+    where: { id: cart.id },
+  });
+};
+
  const deleteCart = async (cartId: string) => {
   const cartItems = await prisma.cartItem.findUnique({
     where: { id: cartId },
@@ -103,5 +119,6 @@ const getMyCart = async (userId: string) => {
 export const cartService = {
   addToCart,
   getMyCart,
-  deleteCart
+  deleteCart,
+  clearCart
 };
