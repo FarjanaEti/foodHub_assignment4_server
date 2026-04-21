@@ -112,7 +112,8 @@ const getAllProviders = async ({
           image:true,
           description:true,
           price:true,
-          title:true
+          title:true,
+          reviews:true
         }
       },
       _count: {
@@ -151,6 +152,7 @@ const getProviderById=async(id:string)=>{
         title: true,
         price: true,
         image: true,
+        reviews:true,
         available: true,
           }
         }
