@@ -153,6 +153,8 @@ model Review {
   @@map("reviews")
 }
 
+//ass-5
+
 model Session {
   id        String   @id
   expiresAt DateTime

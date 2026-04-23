@@ -173,5 +173,6 @@ export const orderService = {
   getProviderOrders,
   getOrderById,
   updateOrder,
-  getMostOrderedMeals
+  getMostOrderedMeals,
+  
 };

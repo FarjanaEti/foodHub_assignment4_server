@@ -17,6 +17,7 @@ router.get(
     "/:mealId",
     MealController.getMealById)
 
+router.patch("/:mealId", auth(UserRole.PROVIDER), MealController.updateMeal);
 router.delete(
     "/:mealId",
     auth(UserRole.PROVIDER),

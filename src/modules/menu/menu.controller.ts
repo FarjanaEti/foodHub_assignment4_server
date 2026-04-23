@@ -169,7 +169,7 @@ const getMealById = async (req: Request, res: Response) => {
 // provider update meal (name, price, availability)
 const updateMeal = async (req: Request, res: Response) => {
   try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+     const id = req.params.mealId as string;
 
     if (!id) {
       res.status(400).json({ success: false, message: "Meal ID is required" });

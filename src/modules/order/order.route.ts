@@ -29,6 +29,8 @@ router.get(
   orderController.getProviderOrders
 );
 
+
+
 // Admin All Orders
 router.get(
   "/allOrders",
@@ -46,6 +48,9 @@ router.get(
   ),
   orderController.getOrderById
 );
+
+//provider edit 
+
 //update order
 router.patch("/:id",auth(UserRole.PROVIDER),orderController.updateOrder)
 

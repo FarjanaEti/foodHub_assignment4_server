@@ -103,14 +103,14 @@ var createMeal = async (providerId, data) => {
   return prisma.meal.create({
     data: {
       title: data.title.trim(),
-      description: data.description?.trim(),
+      description: data.description?.trim() ?? null,
       price: data.price,
-      categoryId: data.categoryId,
       cuisine: data.cuisine,
       dietType: data.dietType,
-      image: data.image,
-      providerId,
-      available: true
+      image: data.image ?? null,
+      available: true,
+      category: { connect: { id: data.categoryId } },
+      provider: { connect: { id: providerId } }
     }
   });
 };
@@ -123,7 +123,9 @@ var getAllMeals = async (params) => {
     dietType,
     minPrice,
     maxPrice,
-    available
+    available,
+    page = 1,
+    limit = 12
   } = params;
   const where = {};
   if (search) {
@@ -142,14 +144,26 @@ var getAllMeals = async (params) => {
     if (minPrice !== void 0) where.price.gte = minPrice;
     if (maxPrice !== void 0) where.price.lte = maxPrice;
   }
-  return prisma.meal.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: {
-      category: true,
-      provider: true
+  const skip = (page - 1) * limit;
+  const [meals, total] = await Promise.all([
+    prisma.meal.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: { category: true, provider: true }
+    }),
+    prisma.meal.count({ where })
+  ]);
+  return {
+    data: meals,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     }
-  });
+  };
 };
 var getMyMeals = async (providerId, query) => {
   const {
@@ -508,21 +522,27 @@ var getAllMeals2 = async (req, res) => {
       dietType,
       minPrice,
       maxPrice,
-      available
+      available,
+      page,
+      limit
     } = req.query;
-    const result = await mealService.getAllMeals({
-      search: typeof search === "string" ? search : void 0,
-      categoryId: typeof categoryId === "string" ? categoryId : void 0,
-      providerId: typeof providerId === "string" ? providerId : void 0,
-      cuisine: typeof cuisine === "string" ? cuisine : void 0,
-      dietType: typeof dietType === "string" ? dietType : void 0,
-      available: available === "true" ? true : available === "false" ? false : void 0,
-      minPrice: typeof minPrice === "string" ? Number(minPrice) : void 0,
-      maxPrice: typeof maxPrice === "string" ? Number(maxPrice) : void 0
-    });
+    const params = {};
+    if (typeof search === "string" && search) params.search = search;
+    if (typeof categoryId === "string" && categoryId) params.categoryId = categoryId;
+    if (typeof providerId === "string" && providerId) params.providerId = providerId;
+    if (typeof cuisine === "string" && cuisine) params.cuisine = cuisine;
+    if (typeof dietType === "string" && dietType) params.dietType = dietType;
+    if (available === "true") params.available = true;
+    if (available === "false") params.available = false;
+    if (typeof minPrice === "string" && minPrice) params.minPrice = Number(minPrice);
+    if (typeof maxPrice === "string" && maxPrice) params.maxPrice = Number(maxPrice);
+    params.page = typeof page === "string" && page ? Number(page) : 1;
+    params.limit = typeof limit === "string" && limit ? Number(limit) : 12;
+    const result = await mealService.getAllMeals(params);
     res.status(200).json({
       success: true,
-      data: result
+      data: result.data,
+      pagination: result.pagination
     });
   } catch (error) {
     res.status(400).json({
@@ -577,13 +597,18 @@ var getMealById2 = async (req, res) => {
   }
 };
 var updateMeal2 = async (req, res) => {
-  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const payload = req.body;
-  const result = await mealService.updateMeal(id, payload);
-  res.status(200).json({
-    success: true,
-    data: result
-  });
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Meal ID is required" });
+      return;
+    }
+    const payload = req.body;
+    const result = await mealService.updateMeal(id, payload);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message || "Update failed" });
+  }
 };
 var deleteMeal2 = async (req, res) => {
   try {
@@ -728,7 +753,8 @@ var getAllProviders = async ({
           image: true,
           description: true,
           price: true,
-          title: true
+          title: true,
+          reviews: true
         }
       },
       _count: {
@@ -764,6 +790,7 @@ var getProviderById = async (id) => {
           title: true,
           price: true,
           image: true,
+          reviews: true,
           available: true
         }
       }
@@ -1092,13 +1119,34 @@ var updateOrder = async (id, status) => {
     data: { status }
   });
 };
+var getMostOrderedMeals = async () => {
+  const items = await prisma.orderItem.groupBy({
+    by: ["mealId"],
+    _sum: { quantity: true },
+    _count: { mealId: true },
+    orderBy: { _sum: { quantity: "desc" } },
+    take: 10
+  });
+  const mealIds = items.map((i) => i.mealId);
+  const mealDetails = await prisma.meal.findMany({
+    where: { id: { in: mealIds } },
+    select: { id: true, title: true, price: true, image: true, description: true }
+  });
+  return items.map((i) => ({
+    mealId: i.mealId,
+    totalQuantity: i._sum.quantity ?? 0,
+    orderCount: i._count.mealId,
+    meal: mealDetails.find((d) => d.id === i.mealId)
+  }));
+};
 var orderService = {
   createOrder,
   getAllOrders,
   getCustomerOrders,
   getProviderOrders,
   getOrderById,
-  updateOrder
+  updateOrder,
+  getMostOrderedMeals
 };
 
 // src/modules/order/order.controller.ts
@@ -1194,13 +1242,22 @@ var updateOrder2 = async (req, res) => {
     data: result
   });
 };
+var getMostOrderedMeals2 = async (_req, res) => {
+  try {
+    const result = await orderService.getMostOrderedMeals();
+    res.status(200).json({ success: true, data: result });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch most ordered meals" });
+  }
+};
 var orderController = {
   createOrder: createOrder2,
   getAllOrders: getAllOrders2,
   getMyOrders,
   getProviderOrders: getProviderOrders2,
   getOrderById: getOrderById2,
-  updateOrder: updateOrder2
+  updateOrder: updateOrder2,
+  getMostOrderedMeals: getMostOrderedMeals2
 };
 
 // src/modules/order/order.route.ts
@@ -1210,6 +1267,7 @@ router4.post(
   auth_default("CUSTOMER" /* CUSTOMER */),
   orderController.createOrder
 );
+router4.get("/most-ordered", orderController.getMostOrderedMeals);
 router4.get(
   "/myOrders",
   auth_default("CUSTOMER" /* CUSTOMER */),
@@ -1377,6 +1435,18 @@ var getMyCart = async (userId) => {
     }
   });
 };
+var clearCart = async (customerId) => {
+  const cart = await prisma.cart.findFirst({
+    where: { customer: { id: customerId } }
+  });
+  if (!cart) return;
+  await prisma.cartItem.deleteMany({
+    where: { cartId: cart.id }
+  });
+  await prisma.cart.delete({
+    where: { id: cart.id }
+  });
+};
 var deleteCart = async (cartId) => {
   const cartItems = await prisma.cartItem.findUnique({
     where: { id: cartId }
@@ -1391,7 +1461,8 @@ var deleteCart = async (cartId) => {
 var cartService = {
   addToCart,
   getMyCart,
-  deleteCart
+  deleteCart,
+  clearCart
 };
 
 // src/modules/cart/cart.controller.ts
@@ -1431,6 +1502,15 @@ var getAllCart = async (_req, res) => {
     });
   }
 };
+var clearCart2 = async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    await cartService.clearCart(customerId);
+    res.status(200).json({ success: true, message: "Cart cleared" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 var deleteCart2 = async (req, res) => {
   try {
     const { cartId } = req.params;
@@ -1450,7 +1530,8 @@ var deleteCart2 = async (req, res) => {
 var cartController = {
   addToCart: addToCart2,
   getAllCart,
-  deleteCart: deleteCart2
+  deleteCart: deleteCart2,
+  clearCart: clearCart2
 };
 
 // src/modules/cart/cart.route.ts
@@ -1465,6 +1546,7 @@ router6.get(
   auth_default("CUSTOMER" /* CUSTOMER */),
   cartController.getAllCart
 );
+router6.delete("/clearCart", auth_default("CUSTOMER" /* CUSTOMER */), cartController.clearCart);
 router6.delete(
   "/:cartId",
   auth_default("CUSTOMER" /* CUSTOMER */),
@@ -1500,10 +1582,13 @@ var createReview = async (data) => {
   }
   return prisma.review.create({
     data: {
-      userId: data.userId,
-      mealId: data.mealId,
       rating: data.rating,
-      comment: data.comment
+      comment: data.comment ?? null,
+      // ← fix: undefined → null
+      user: { connect: { id: data.userId } },
+      // ← fix: use connect
+      meal: { connect: { id: data.mealId } }
+      // ← fix: use connect
     }
   });
 };
@@ -1512,9 +1597,30 @@ var getAllReview = async () => {
     orderBy: { createdAt: "asc" }
   });
 };
+var getTopRatedMeals = async () => {
+  const meals = await prisma.review.groupBy({
+    by: ["mealId"],
+    _avg: { rating: true },
+    _count: { rating: true },
+    orderBy: { _avg: { rating: "desc" } },
+    take: 10
+  });
+  const mealIds = meals.map((m) => m.mealId);
+  const mealDetails = await prisma.meal.findMany({
+    where: { id: { in: mealIds } },
+    select: { id: true, title: true, price: true, image: true, description: true }
+  });
+  return meals.map((m) => ({
+    mealId: m.mealId,
+    avgRating: Math.round((m._avg.rating ?? 0) * 10) / 10,
+    reviewCount: m._count.rating,
+    meal: mealDetails.find((d) => d.id === m.mealId)
+  }));
+};
 var reviewServices = {
   createReview,
-  getAllReview
+  getAllReview,
+  getTopRatedMeals
 };
 
 // src/modules/review/review.controller.ts
@@ -1551,9 +1657,18 @@ var getAllReview2 = async (_req, res) => {
     });
   }
 };
+var getTopRatedMeals2 = async (_req, res) => {
+  try {
+    const result = await reviewServices.getTopRatedMeals();
+    res.status(200).json({ success: true, data: result });
+  } catch {
+    res.status(500).json({ success: false, message: "Failed to fetch top rated meals" });
+  }
+};
 var reviewController = {
   createReview: createReview2,
-  getAllReview: getAllReview2
+  getAllReview: getAllReview2,
+  getTopRatedMeals: getTopRatedMeals2
 };
 
 // src/modules/review/review.route.ts
@@ -1564,6 +1679,7 @@ router7.post(
   reviewController.createReview
 );
 router7.get("/allReview", reviewController.getAllReview);
+router7.get("/top-rated", reviewController.getTopRatedMeals);
 var reviewRouter = router7;
 
 // src/modules/payment/payment.route.ts
@@ -1638,6 +1754,7 @@ var initiatePayment2 = async (req, res) => {
 var paymentSuccess = async (req, res) => {
   try {
     const { tran_id } = req.body;
+    console.log("\u2705 Payment success hit!", tran_id);
     await prisma.order.update({
       where: { id: tran_id },
       data: {
@@ -1661,7 +1778,7 @@ var paymentFail = async (req, res) => {
         status: "CANCELLED"
       }
     });
-    res.redirect("https://assignment4-client-lilac.vercel.app/payment-fail");
+    res.redirect("https://assignment4-client-lilac.vercel.app/dashboard/payment-fail");
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -1676,7 +1793,7 @@ var paymentCancel = async (req, res) => {
         status: "CANCELLED"
       }
     });
-    res.redirect("https://assignment4-client-lilac.vercel.app/payment-cancel");
+    res.redirect("https://assignment4-client-lilac.vercel.app/dashboard/payment-cancel");
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
